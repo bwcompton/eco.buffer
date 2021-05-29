@@ -1,0 +1,24 @@
+Package: eco.buffer
+Title: Delineates Ecologically-Defined Buffers Around Target Conservation Areas
+Version: 0.9.0
+Author: Bradley W. Compton
+Maintainer: Bradley W. Compton <bcompton@umass.edu>
+Description: #' Delineates ecologically-defined buffers around target conservation 
+    areas using resistant kernels. Given conservation areas of interest ('seeds'),
+    and a resistant surface (either one or more rasters or a landcover and 
+    table with a resistance for each class), eco.buffer builds resistant kernel
+    polygons or rasters around each seed to delineate areas of conservation
+    interest for seeds. Seeds may be point, line, or polygon shapefiles, 
+    typically delineating known locations for species of concern, rare
+    ecological communities, or conservation cores. 
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.1.1
+Imports:
+	gridprocess,
+	raster,
+	rgdal,
+	rgeos,
+	utils

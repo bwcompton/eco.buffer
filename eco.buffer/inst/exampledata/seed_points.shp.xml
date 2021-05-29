@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata xml:lang="en"><Esri><CreaDate>20210526</CreaDate><CreaTime>18144800</CreaTime><ArcGISFormat>1.0</ArcGISFormat><SyncOnce>TRUE</SyncOnce><DataProperties><lineage><Process ToolSource="c:\program files\arcgis\pro\Resources\ArcToolbox\toolboxes\Data Management Tools.tbx\CalculateField" Date="20210526" Time="181448">CalculateField seed_points Id "!FID! + 1
+" "Python 3" # Text NO_ENFORCE_DOMAINS</Process></lineage></DataProperties></Esri></metadata>
