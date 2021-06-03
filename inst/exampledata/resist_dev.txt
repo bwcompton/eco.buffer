@@ -1,0 +1,24 @@
+class	resist	covertype
+11	100	Commercial building
+12	100	Industrial building
+13	100	Agricultural building
+14	100	Residential building
+15	100	Recreational building
+16	100	Public building
+20	50	Pavement
+30	25	Developed open space
+41	100	Expressway
+42	100	Primary highway
+43	60	Secondary highway
+44	40	Light duty road
+45	10	Unpaved road
+51	50	Railroad
+52	5	Abandoned railbed
+53	8	Rail trail
+60	100	Bridge or culvert
+61	100	Dam
+120	25	Cropland
+121	10	Pasture
+130	5	Bare land
+
+
