@@ -11,6 +11,7 @@
    #           [3] optional user-supplied max
    #   minmax  minimum and maximum of resist (from grid before clipping)
    # B. Compton, 25-26 May 2021
+   # 18 Jul 2021: it was possible to get resistances < 1 with negative resistance and nonzero minimum
 
 
 
@@ -25,5 +26,5 @@
    if(mult[1] < 0)            # if inverting,
       x <- mm[2] - x
 
-   (x - min(1, mm[1])) * abs(mult[1]) + 1
+   (x - min(1, mm[1] * (mult > 0))) * abs(mult[1]) + 1
 }

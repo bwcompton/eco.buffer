@@ -44,10 +44,11 @@
 #' values that originally range from 0 to n or 1 to n will range from 1 to approximately
 #' n * resist.mult after multiplying. Use a negative multiplier to invert the resistances
 #' when using a positive grid, where higher values denote lower resistance. The minimum
-#' and maximum resistances are needed for this procedure. They are obtaine from the entire
-#' raster before any clipping. If you are running on tiled data, you may need to supply
-#' the overall minimum and maximum as the 2nd and 3rd elements. The default multiplier is
-#' 1, thus resistance values are used directly (or 1 is added if the minimum is 0).
+#' and maximum resistances are needed for this procedure. They are obtained from the entire
+#' raster before any clipping. If you are running on tiled data, or data that otherwise
+#' don't represent the entire range of resistance values, you need to supply the overall
+#' minimum and maximum as the 2nd and 3rd elements. The default multiplier is 1, thus
+#' resistance values are used directly (or 1 is added if the minimum is 0).
 #' @param resist.table.mult multiplier on resistances from a table. See resist.mult.
 #' @param barrier.mult multiplier on barrier resistances. See resist.mult.
 #' @param passage.mult multiplier on passage resistances. See resist.mult.
@@ -107,7 +108,7 @@
 #' cell, the cell's resistance x multiplier is subtracted from the spread value. For
 #' example, a bandwidth of 5000 m when the cell size is 30 m gives a spread value of
 #' 166.67. The spread will stop once it has passed through cells with a cumulative
-#' resistance * multiplier of 166.67. Resistances greater than or equal tothis value
+#' resistance * multiplier of 166.67. Resistances greater than or equal to this value
 #' will stop the spread at a single cell, thus these cells act as complete barriers.
 #' 2. Raster inputs may be either Arc grids or geoTIFFs (other formats will likely
 #' work).
@@ -152,10 +153,12 @@
 #' @section Author:
 #' Bradley W. Compton <bcompton@@umass.edu>
 #' @export
-#' @import gridprocess  # C++ code that does resistant kernels. Package source is at https://github.com/ethanplunkett/gridprocess
-#' @import raster       # GIS processing for raster data
-#' @import rgdal        # GIS processing
-#' @import rgeos        # GIS processing
+#  C++ code that does resistant kernels. Package source is at https://github.com/ethanplunkett/gridprocess
+#' @import gridprocess
+#  GIS processing for raster data
+#' @import raster
+#' @import rgdal
+#' @import rgeos
 #' @importFrom utils read.table
 #' @examples
 #' ### Set up temporary directory for examples
@@ -186,7 +189,7 @@
                          barrier.mult = 1, passage.mult = 1, save.resist = NULL, path = '', density = 1,
                          expand = NULL, screen = NULL, broccoli = NULL, flow = NULL, accumulation = NULL,
                          streams = NULL, clip = NULL, fullextent = FALSE, simplify = TRUE,
-                         simplify.tolerance = 30, verbose = TRUE, timing = TRUE) {
+                         simplify.tolerance = 30, verbose = TRUE, timing = FALSE) {
 
 
 
