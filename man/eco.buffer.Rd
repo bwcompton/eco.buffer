@@ -85,10 +85,11 @@ for other cells.}
 values that originally range from 0 to n or 1 to n will range from 1 to approximately
 n * resist.mult after multiplying. Use a negative multiplier to invert the resistances
 when using a positive grid, where higher values denote lower resistance. The minimum
-and maximum resistances are needed for this procedure. They are obtaine from the entire
-raster before any clipping. If you are running on tiled data, you may need to supply
-the overall minimum and maximum as the 2nd and 3rd elements. The default multiplier is
-1, thus resistance values are used directly (or 1 is added if the minimum is 0).}
+and maximum resistances are needed for this procedure. They are obtained from the entire
+raster before any clipping. If you are running on tiled data, or data that otherwise
+don't represent the entire range of resistance values, you need to supply the overall
+minimum and maximum as the 2nd and 3rd elements. The default multiplier is 1, thus
+resistance values are used directly (or 1 is added if the minimum is 0).}
 
 \item{resist.table.mult}{multiplier on resistances from a table. See resist.mult.}
 
@@ -145,7 +146,8 @@ Larger values give simpler polygons.}
 
 \item{verbose}{set to FALSE to suppress informational chatter.}
 
-\item{timing}{display timing messages if TRUE (verbose must be TRUE too).}
+\item{timing}{display overall timing message if TRUE, and also intermediate timing
+messages if 'all' (verbose must be TRUE too).}
 }
 \description{
 Delineates ecologically-defined buffers around target conservation areas using a resistant kernel
@@ -176,7 +178,7 @@ each focal cell (all edge cells of each seed) at bandwidth / cell size. At each
 cell, the cell's resistance x multiplier is subtracted from the spread value. For
 example, a bandwidth of 5000 m when the cell size is 30 m gives a spread value of
 166.67. The spread will stop once it has passed through cells with a cumulative
-resistance * multiplier of 166.67. Resistances greater than or equal tothis value
+resistance * multiplier of 166.67. Resistances greater than or equal to this value
 will stop the spread at a single cell, thus these cells act as complete barriers.
 \item Raster inputs may be either Arc grids or geoTIFFs (other formats will likely
 work).
