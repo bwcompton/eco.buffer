@@ -1,6 +1,6 @@
 Package: eco.buffer
 Title: Delineates Ecologically-Defined Buffers Around Target Conservation Areas
-Version: 0.9.1
+Version: 1.0.0
 Author: Bradley W. Compton
 Maintainer: Bradley W. Compton <bcompton@umass.edu>
 Description: #' Delineates ecologically-defined buffers around target conservation 
