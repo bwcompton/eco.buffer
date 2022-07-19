@@ -34,7 +34,7 @@ eco.buffer(
   simplify = TRUE,
   simplify.tolerance = 30,
   verbose = TRUE,
-  timing = TRUE
+  timing = FALSE
 )
 }
 \arguments{
@@ -205,6 +205,14 @@ if supplied, or else the resistance grid.
 \item When using the broccoli option with a flow accumulation grid in terms of cells
 (as is the CAPS grid), convert to km^2 with 1e6 / cellsize ^ 2. For a 30 m grid, use
 flow accumulation / 1111 to get km^2.
+\item Note that when using polygons as seeds, tiny or skinny polygons that cover
+less than half of a cell may not be properly captured when converting seeds to
+raster. eco.buffer ensures that at least the centroid (moved inside of the
+polygon) will be captured, but long polygons that are narrower than a cell may be
+represented by only a single cell or a disjunct series of cells. It's always good
+practice to use the resultgrid option to save a raster version of the result, and
+look at cells with a value of 1.0 to see where the seed polygons ended up in the
+raster representation.
 }
 }
 
