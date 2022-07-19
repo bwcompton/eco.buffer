@@ -135,6 +135,14 @@
 #' 10. When using the broccoli option with a flow accumulation grid in terms of cells
 #' (as is the CAPS grid), convert to km^2 with 1e6 / cellsize ^ 2. For a 30 m grid, use
 #' flow accumulation / 1111 to get km^2.
+#' 11. Note that when using polygons as seeds, tiny or skinny polygons that cover
+#' less than half of a cell may not be properly captured when converting seeds to
+#' raster. eco.buffer ensures that at least the centroid (moved inside of the
+#' polygon) will be captured, but long polygons that are narrower than a cell may be
+#' represented by only a single cell or a disjunct series of cells. It's always good
+#' practice to use the resultgrid option to save a raster version of the result, and
+#' look at cells with a value of 1.0 to see where the seed polygons ended up in the
+#' raster representation.
 #'
 #' @section References:
 #' Compton, B.W., K. McGarigal, S.A. Cushman, and L.R. Gamble. 2007. A resistant-kernel
@@ -159,6 +167,7 @@
 #' @import raster
 #' @import rgdal
 #' @import rgeos
+#' @import sp
 #' @importFrom utils read.table
 #' @examples
 #' ### Set up temporary directory for examples
@@ -366,7 +375,14 @@
    # convert vector to grid
    chatter(verbose, 'Converting shapefile to grid...')
    t <- proc.time()[3]
-   z <- rasterize(seedshape, ref, field = seedid) + 1    # add 1 to preserve zero ids
+
+   z <- rasterize(seedshape, ref, field = seedid) + 1       # add 1 to preserve zero ids
+
+   # make sure we've captured tiny polygons by converting (inside) centroids too
+   q <- SpatialPointsDataFrame(gPointOnSurface(seedshape, byid = TRUE), seedshape@data)
+   q <- rasterize(q, ref, field = seedid) + 1               # add 1 again
+   z[] <- pmax(as.matrix(z), as.matrix(q), na.rm = TRUE)
+
    if(all(is.na(as.matrix(z))))
       stop('Empty seeds. Perhaps you were too heavy-handed with clip?')
 
@@ -419,9 +435,6 @@
       chatter(verbose, 'Expanding broccoli kernels...')
       t <- proc.time()[3]
       q <- broccoli.kernel(broccoli, y, w, streamg, flowg, accumg, res(z))
-
-      #  z<<-z;land<<-land;return() #######################
-
       y <- q[[1]]     # kernel
       w <- q[[2]]     # seed id
       chatter(timing[2] & verbose, '  Elapsed time = ', proc.time()[3] - t, ' s')
