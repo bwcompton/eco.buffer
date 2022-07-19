@@ -7,13 +7,14 @@
     #   path    path to prepend (optionally ending with /)
     #   file    filename
     # B. Compton, 2 Apr 2021
+    # 23 Aug 2021: behave properly if path = ''
 
 
-    if(!is.null(path) & !is.null(file))
-        if((nchar(file) > 0)) {
-            s <- ifelse(substr(path, nchar(path), nchar(path)) != '/', '/', '')
-            if(1 != length(grep('^/|^[a-zA-Z]:', file)))
-                file <- paste(path, s, file, sep = '')
-        }
+
+    if(!is.null(file) && nchar(file) > 0 && !is.null(path) && nchar(path) > 0) {
+        s <- ifelse(substr(path, nchar(path), nchar(path)) != '/', '/', '')
+        if(1 != length(grep('^/|^[a-zA-Z]:', file)))
+            file <- paste(path, s, file, sep = '')
+    }
     file
 }
