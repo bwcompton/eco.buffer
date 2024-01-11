@@ -1,5 +1,5 @@
 #' Ecological Buffer Tool
-#'
+#'xxx
 #' Delineates ecologically-defined buffers around target conservation areas using a resistant kernel
 #'
 #' @param seeds a shapefile of points, lines, or polygons designating conservation
