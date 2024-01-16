@@ -16,7 +16,8 @@
    chatter(verbose, 'Writing ', what, ' shapefile...')
    t <- proc.time()[3]
 
-   st_write(x, name, delete_dsn = TRUE)            # and write shapefile
+   if(length(grep('.shp$', name, ignore.case = TRUE)) == 0) name <- paste0(name, '.shp')
+   suppressWarnings(st_write(x, name, delete_dsn = TRUE, quiet = TRUE))            # and write shapefile
 
    what <- paste(toupper(substring(what, 1, 1)), substring(what, 2), sep = '')
 

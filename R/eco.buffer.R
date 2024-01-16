@@ -1,5 +1,5 @@
 #' Ecological Buffer Tool
-#'xxx
+#'
 #' Delineates ecologically-defined buffers around target conservation areas using a resistant kernel
 #'
 #' @param seeds a shapefile of points, lines, or polygons designating conservation
@@ -164,10 +164,8 @@
 #  C++ code that does resistant kernels. Package source is at https://github.com/ethanplunkett/gridprocess
 #' @import gridprocess
 #  GIS processing for raster data
-#' @import raster
-#' @import rgdal
-#' @import rgeos
-#' @import sp
+#' @import terra
+#' @import sf
 #' @importFrom utils read.table
 #' @examples
 #' ### Set up temporary directory for examples
@@ -191,6 +189,9 @@
 #'      resist.table = 'resist_streams.txt', default.resist = 999, barrier = 'abarriers.tif',
 #'      barrier.mult = 100, result = 'stream_test3', simplify = FALSE, path = dir)
 # B. Compton, 2 Apr 2021-31 May 2021
+# 11 Jan 2024: revise to use sf and terra
+
+
 
 'eco.buffer' <- function(seeds, bandwidth, seedid = 'Id', result = NULL, resultgrid = NULL, resist = NULL,
                          resist.table = NULL, default.resist = NULL, landcover = '',
@@ -245,12 +246,12 @@
 
    # ------------------------ READ AND CLIP DATA ------------------------
    chatter(verbose, '\nReading seeds shapefile...')
-   seedshape <- suppressWarnings(readOGR(dsn = add.path(path, seeds), verbose = FALSE))
+   seedshape <- st_read(dsn = add.path(path, seeds), quiet = TRUE)
 
    if(is.na(match(seedid, names(seedshape))))
       stop('Seed ID column (seedid = \'', seedid, '\') not found in shapefile ', seeds)
 
-   if((class(seedshape)[1] == 'SpatialPointsDataFrame') & density != 1)
+   if(all(st_is(seedshape, 'POINT')) & density != 1)
       stop('When seeds are points, denisty must be 1 (otherwise some seeds may be lost)')
 
    if(!any(is.na(suppressWarnings(as.numeric(seedshape[[seedid]])))))
@@ -261,27 +262,30 @@
    # if expand option is included, buffer seeds
    if(!is.null(expand) && expand > 0) {
       q <- buffer(seedshape, expand, dissolve = FALSE)    # buffer seeds
-      names(q)[1] <- seedid
-      q[[seedid]] <- seedshape[[seedid]]                  # and transfer seedid
-      seedshape <- q
+
+      # I think these 3 lines are unnecessary. The just move seedid to 1st column. They're preserved in buffering,
+      # and subsequent references use the name, not position, so why would I care?
+      # names(q)[1] <- seedid
+      # q[[seedid]] <- seedshape[[seedid]]                  # and transfer seedid
+      # seedshape <- q
    }
 
    if(!is.null(clip)) {
       chatter(verbose, 'Reading clip shapefile...')
-      clipshape <- suppressWarnings(readOGR(dsn = add.path(path, clip), verbose = FALSE))
+      clipshape <- st_read(dsn = add.path(path, clip), quiet = TRUE)
    }
 
    # Read resistance grid, if supplied to get reference
    if(!is.null(resist)) {
       chatter(verbose, 'Reading resistance grid...')
-      rg <- raster(add.path(path, resist))
+      rg <- rast(add.path(path, resist))
       ref <- rg
    }
 
    # Read landcover grid (optional) and get reference
    if(!is.null(landcover)) {
       chatter(verbose, 'Reading landcover grid...')
-      land <- raster(add.path(path, landcover))
+      land <- rast(add.path(path, landcover))
       ref <- land
    }
 
@@ -310,23 +314,23 @@
 
    # read and clip barrier grid
    if(!is.null(barrier)) {
-      barrg <- raster(barrier)
+      barrg <- rast(barrier)
       barrier.minmax <- minmax(barrg)
       barrg <- as.matrix(crop(barrg, ref))
    }
 
    # read and clip passage grid
    if(!is.null(passage)) {
-      passg <- raster(passage)
+      passg <- rast(passage)
       passage.minmax <- minmax(passg)
       passg <- as.matrix(crop(passage, ref))
    }
 
    # Read and clip streams, flow, and accumulation
    if(!is.null(broccoli)) {
-      streamg <- as.matrix(crop(raster(streams), ref))
-      flowg <- as.matrix(crop(raster(flow), ref))
-      accumg <- as.matrix(crop(raster(accumulation), ref))
+      streamg <- as.matrix(crop(rast(streams), ref))
+      flowg <- as.matrix(crop(rast(flow), ref))
+      accumg <- as.matrix(crop(rast(accumulation), ref))
    }
    chatter(timing[2] & verbose, '  Elapsed time = ', proc.time()[3] - t, ' s')
 
@@ -379,7 +383,7 @@
    z <- rasterize(seedshape, ref, field = seedid) + 1       # add 1 to preserve zero ids
 
    # make sure we've captured tiny polygons by converting (inside) centroids too
-   q <- SpatialPointsDataFrame(gPointOnSurface(seedshape, byid = TRUE), seedshape@data)
+   q <- SpatialPointsDataFrame(gPointOnSurface(seedshape, byid = TRUE), seedshape@data)   ### make sure we're using seedid!
    q <- rasterize(q, ref, field = seedid) + 1               # add 1 again
    z[] <- pmax(as.matrix(z), as.matrix(q), na.rm = TRUE)
 
