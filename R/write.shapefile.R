@@ -9,13 +9,14 @@
    #   verbose    whether to chatter
    #   timing     whether to report timing (only if chatter = TRUE)
    # B. Compton, 29 May 2021
+   # 12 Jan 2024: use sf
 
 
 
    chatter(verbose, 'Writing ', what, ' shapefile...')
    t <- proc.time()[3]
 
-   shapefile(x, file = name, overwrite = TRUE)   # and write shapefile
+   st_write(x, name, delete_dsn = TRUE)            # and write shapefile
 
    what <- paste(toupper(substring(what, 1, 1)), substring(what, 2), sep = '')
 
