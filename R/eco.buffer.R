@@ -246,7 +246,7 @@
 
    # ------------------------ READ AND CLIP DATA ------------------------
    chatter(verbose, '\nReading seeds shapefile...')
-   seedshape <- st_read(dsn = add.path(path, seeds), quiet = TRUE)
+   seedshape <- st_read(add.path(path, seeds), quiet = TRUE)
 
    if(is.na(match(seedid, names(seedshape))))
       stop('Seed ID column (seedid = \'', seedid, '\') not found in shapefile ', seeds)
@@ -272,7 +272,7 @@
 
    if(!is.null(clip)) {
       chatter(verbose, 'Reading clip shapefile...')
-      clipshape <- st_read(dsn = add.path(path, clip), quiet = TRUE)
+      clipshape <- st_read(add.path(path, clip), quiet = TRUE)
    }
 
    # Read resistance grid, if supplied to get reference
@@ -293,12 +293,13 @@
    t <- proc.time()[3]
    if(!is.null(clip)){               # if clip is set, use it
       chatter(verbose, 'Clipping to clip box...')
-      shapes <- crop(seedshape, clipshape)
+      shapes <- suppressWarnings(st_intersection(seedshape, clipshape))   # clip shapefile
+
       ref <- crop(ref, clipshape)
    }
    else if(!fullextent) {             # otherwise, clip to seeds + bandwidth, unless fullextent, in which case clip to full reference grid
       chatter(verbose, 'Clipping grids to match ', ifelse(fullextent, 'reference grid...', 'seeds shapefile...'))
-      q <- extent(seedshape)
+      q <- st_bbox(seedshape)
       q <- q + c(-bandwidth, bandwidth, -bandwidth, bandwidth)
       ref <- crop(ref, q)
    }
@@ -306,31 +307,31 @@
    # clip all grids for alignment, to clip, seeds + bandwidth, or fullextent, depending
    if(!is.null(resist)) {
       resist.minmax <- minmax(rg)
-      r <- as.matrix(crop(rg, ref))
+      r <- as.matrix(crop(rg, ref), wide = TRUE)
    }
 
    if(!is.null(landcover))
-      land <- as.matrix(crop(land, ref))
+      land <- as.matrix(crop(land, ref), wide = TRUE)
 
    # read and clip barrier grid
    if(!is.null(barrier)) {
       barrg <- rast(barrier)
       barrier.minmax <- minmax(barrg)
-      barrg <- as.matrix(crop(barrg, ref))
+      barrg <- as.matrix(crop(barrg, ref), wide = TRUE)
    }
 
    # read and clip passage grid
    if(!is.null(passage)) {
       passg <- rast(passage)
       passage.minmax <- minmax(passg)
-      passg <- as.matrix(crop(passage, ref))
+      passg <- as.matrix(crop(passage, ref), wide = TRUE)
    }
 
    # Read and clip streams, flow, and accumulation
    if(!is.null(broccoli)) {
-      streamg <- as.matrix(crop(rast(streams), ref))
-      flowg <- as.matrix(crop(rast(flow), ref))
-      accumg <- as.matrix(crop(rast(accumulation), ref))
+      streamg <- as.matrix(crop(rast(streams), ref), wide = TRUE)
+      flowg <- as.matrix(crop(rast(flow), ref), wide = TRUE)
+      accumg <- as.matrix(crop(rast(accumulation), ref), wide = TRUE)
    }
    chatter(timing[2] & verbose, '  Elapsed time = ', proc.time()[3] - t, ' s')
 
@@ -383,11 +384,13 @@
    z <- rasterize(seedshape, ref, field = seedid) + 1       # add 1 to preserve zero ids
 
    # make sure we've captured tiny polygons by converting (inside) centroids too
-   q <- SpatialPointsDataFrame(gPointOnSurface(seedshape, byid = TRUE), seedshape@data)   ### make sure we're using seedid!
+###   q <- SpatialPointsDataFrame(gPointOnSurface(seedshape, byid = TRUE), seedshape@data)   ### make sure we're using seedid!
+### this is so much simpler. I think we're good, right? Needs testing
+   q <- st_point_on_surface(seedshape)
    q <- rasterize(q, ref, field = seedid) + 1               # add 1 again
-   z[] <- pmax(as.matrix(z), as.matrix(q), na.rm = TRUE)
+   z[] <- pmax(as.matrix(z, wide = TRUE), as.matrix(q, wide = TRUE), na.rm = TRUE)
 
-   if(all(is.na(as.matrix(z))))
+   if(all(is.na(as.matrix(z, wide = TRUE))))
       stop('Empty seeds. Perhaps you were too heavy-handed with clip?')
 
 
@@ -402,9 +405,9 @@
    x <- find.edges(z)
 
    # convert to matrix with 0s instead of NAs. Keep z for spatial reference.
-   x <- as.matrix(x)       # edge cells
+   x <- as.matrix(x, wide = TRUE)       # edge cells
    x[is.na(x)] <- 0
-   w <- as.matrix(z)
+   w <- as.matrix(z, wide = TRUE)
    w[is.na(w)] <- 0
 
    chatter(timing[2] & verbose, '  Elapsed time = ', proc.time()[3] - t, ' s')
