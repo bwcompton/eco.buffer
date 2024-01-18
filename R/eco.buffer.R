@@ -384,9 +384,7 @@
    z <- rasterize(seedshape, ref, field = seedid) + 1       # add 1 to preserve zero ids
 
    # make sure we've captured tiny polygons by converting (inside) centroids too
-###   q <- SpatialPointsDataFrame(gPointOnSurface(seedshape, byid = TRUE), seedshape@data)   ### make sure we're using seedid!
-### this is so much simpler. I think we're good, right? Needs testing
-   q <- st_point_on_surface(seedshape)
+   q <- suppressWarnings(st_point_on_surface(seedshape))
    q <- rasterize(q, ref, field = seedid) + 1               # add 1 again
    z[] <- pmax(as.matrix(z, wide = TRUE), as.matrix(q, wide = TRUE), na.rm = TRUE)
 
@@ -418,7 +416,7 @@
    chatter(verbose, 'Building resistant kernels...')
    t <- proc.time()[3]
    h <- ceiling(bandwidth / res(z)[1])    # bandwidth in terms of cells
-   y <- as.matrix(!is.na(z)) * h          # polygon insides
+   y <- as.matrix(!is.na(z), wide = TRUE) * h          # polygon insides
    c <- seq(-h, h)                        # window index vector
    for(i in 1:dim(x)[1])                  # For each row in landscape,
       if(i %% density == 0)               #   if not skipping this row
@@ -462,13 +460,13 @@
 
       chatter(verbose, 'Raster to poly...')
       t <- proc.time()[3]
-      p <- rasterToPolygons(z, dissolve = TRUE)     # convert to polygon
+      p <- st_as_sf(rasterToPolygons(z, dissolve = TRUE))     # convert to polygon
       chatter(timing[2] & verbose, '  Elapsed time = ', proc.time()[3] - t, ' s')
 
       if(simplify) {
          chatter(verbose, 'Simplifying...')
          t <- proc.time()[3]
-         p <- gSimplify(p, tol = simplify.tolerance)       # smooth
+         p <- st_simplify(p, dTolerance = simplify.tolerance)       # smooth
          chatter(timing[2] & verbose, '  Elapsed time = ', proc.time()[3] - t, ' s')
       }
       write.shapefile(p, result, 'result', verbose, timing[2])
