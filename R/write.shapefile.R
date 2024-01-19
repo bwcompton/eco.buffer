@@ -10,6 +10,7 @@
    #   timing     whether to report timing (only if chatter = TRUE)
    # B. Compton, 29 May 2021
    # 12 Jan 2024: use sf
+   # 19 Jan 2024: Use backslashes in file paths
 
 
 
@@ -22,7 +23,7 @@
    what <- paste(toupper(substring(what, 1, 1)), substring(what, 2), sep = '')
 
    if(verbose)
-      chatter(verbose, 'Result shapefile written to ', name)
+      chatter(verbose, 'Result shapefile written to ', gsub('/+', '\\\\', name))
 
    chatter(timing & verbose, '  Elapsed time = ', proc.time()[3] - t, ' s')
 }

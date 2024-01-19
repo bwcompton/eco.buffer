@@ -14,6 +14,7 @@
    # B. Compton, 29 May 2021
    # 12 Jan 2024: use terra, add type
    # 16 Jan 2024: use assessType, copied from rasterPrep, to get proper nodata value
+   # 19 Jan 2024: Use backslashes in file paths
 
 
 
@@ -33,7 +34,7 @@
    writeRaster(template, name, datatype = type, overwrite = TRUE, NAflag = assessType(type)$noDataValue)
 
    what <- paste(toupper(substring(what, 1, 1)), substring(what, 2), sep = '')
-   chatter(verbose, what, ' grid written to ', name)
+   chatter(verbose, what, ' grid written to ', gsub('/+', '\\\\', name))
 
    chatter(timing & verbose, '  Elapsed time = ', proc.time()[3] - t, ' s')
 }

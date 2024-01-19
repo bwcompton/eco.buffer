@@ -174,7 +174,7 @@
 #' dir <- tempdir()
 #' if(!file.exists(dir)) dir.create(dir)
 #' file.copy(dp, dir, recursive=TRUE)
-#' cat('Example data and results will be in', dir)
+#' cat('Example data and results will be in', dir, '\n')
 #'
 #' ### 1. terrestrial kernels (creates test1.shp and testg1.tif)
 #' eco.buffer('seed_points', bandwidth = 2000, landcover = 'capsland.tif',
@@ -386,7 +386,10 @@
    # make sure we've captured tiny polygons by converting (inside) centroids too
    q <- suppressWarnings(st_point_on_surface(seedshape))
    q <- rasterize(q, ref, field = seedid) + 1               # add 1 again
-   z[] <- pmax(as.matrix(z, wide = TRUE), as.matrix(q, wide = TRUE), na.rm = TRUE)
+
+ #  z1<<-z;q1<<-q;return()
+
+   z[] <- as.vector(pmax(as.matrix(z, wide = TRUE), as.matrix(q, wide = TRUE), na.rm = TRUE))
 
    if(all(is.na(as.matrix(z, wide = TRUE))))
       stop('Empty seeds. Perhaps you were too heavy-handed with clip?')
@@ -426,8 +429,11 @@
                k <- k[e1 <- (k >= 1) & (k <= dim(x)[1])]
                l <- j + c
                l <- l[e2 <- (l >= 1) & (l <= dim(x)[2])]
+
+ #              q1 <<- q; r1<<-r;k<<-k;l<<-l;i<<-i;j<<-j;l<<-l;z1<<-z;w<<-w;y<<-y;h<<-h;return()
+
                q <- rawspread(r[k, l], h, match(i, k), match(j, l))
-               w[k, l] <- ifelse(q > y[k, l], (q != 0) * z[i, j, 1], w[k, l]) #       seed id
+               w[k, l] <- ifelse(q > y[k, l], (q != 0) * as.numeric(z[i, j, 1]), w[k, l]) #       seed id
                y[k, l] <- pmax(y[k, l], q)                                    #       kernel values
 
             }
@@ -456,11 +462,11 @@
    # ------------------------ SAVE RESULTS ------------------------
    chatter(verbose, 'Saving results...')
    if(!is.null(result)) {
-      z[] <- w
+      z[] <- as.vector(w)
 
       chatter(verbose, 'Raster to poly...')
       t <- proc.time()[3]
-      p <- st_as_sf(rasterToPolygons(z, dissolve = TRUE))     # convert to polygon
+      p <- st_as_sf(as.polygons(z, dissolve = TRUE))     # convert to polygon
       chatter(timing[2] & verbose, '  Elapsed time = ', proc.time()[3] - t, ' s')
 
       if(simplify) {
