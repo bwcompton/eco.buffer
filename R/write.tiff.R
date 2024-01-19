@@ -29,7 +29,7 @@
           type
    )
 
-   template[] <- as.vector(x)
+   template[] <- as.vector(t(x))
    if(length(grep('.tif$', name, ignore.case = TRUE)) == 0) name <- paste0(name, '.tif')
    writeRaster(template, name, datatype = type, overwrite = TRUE, NAflag = assessType(type)$noDataValue)
 

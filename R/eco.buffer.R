@@ -386,10 +386,7 @@
    # make sure we've captured tiny polygons by converting (inside) centroids too
    q <- suppressWarnings(st_point_on_surface(seedshape))
    q <- rasterize(q, ref, field = seedid) + 1               # add 1 again
-
- #  z1<<-z;q1<<-q;return()
-
-   z[] <- as.vector(pmax(as.matrix(z, wide = TRUE), as.matrix(q, wide = TRUE), na.rm = TRUE))
+   z[] <- as.vector(t(pmax(as.matrix(z, wide = TRUE), as.matrix(q, wide = TRUE), na.rm = TRUE)))
 
    if(all(is.na(as.matrix(z, wide = TRUE))))
       stop('Empty seeds. Perhaps you were too heavy-handed with clip?')
@@ -415,6 +412,7 @@
 
 
 
+
    # ------------------------ BUILD RESISTANT KERNELS ------------------------
    chatter(verbose, 'Building resistant kernels...')
    t <- proc.time()[3]
@@ -430,14 +428,19 @@
                l <- j + c
                l <- l[e2 <- (l >= 1) & (l <= dim(x)[2])]
 
- #              q1 <<- q; r1<<-r;k<<-k;l<<-l;i<<-i;j<<-j;l<<-l;z1<<-z;w<<-w;y<<-y;h<<-h;return()
-
                q <- rawspread(r[k, l], h, match(i, k), match(j, l))
                w[k, l] <- ifelse(q > y[k, l], (q != 0) * as.numeric(z[i, j, 1]), w[k, l]) #       seed id
                y[k, l] <- pmax(y[k, l], q)                                    #       kernel values
 
             }
    y <- y / max(y)      # rescale kernels 0 to 1
+
+   # z1<<-z;x<<-x;w<<-w;density1<<-density;bandwidth<<-bandwidth;r<<-r;y<<-y;ref<<-ref;return()
+   # library(gridprocess);library(terra);z<-z1;density<-density1
+   # source('g:/r/eco.buffer/r/chatter.R')
+   # source('g:/r/eco.buffer/r/write.tiff.R')
+   # write.tiff(y, ref, 'd:/temp/try1.tif')
+
 
 
 
@@ -462,7 +465,7 @@
    # ------------------------ SAVE RESULTS ------------------------
    chatter(verbose, 'Saving results...')
    if(!is.null(result)) {
-      z[] <- as.vector(w)
+      z[] <- as.vector(t(w))
 
       chatter(verbose, 'Raster to poly...')
       t <- proc.time()[3]
