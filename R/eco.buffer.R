@@ -194,6 +194,8 @@
 
 
 
+
+
 'eco.buffer' <- function(seeds, bandwidth, seedid = 'Id', result = NULL, resultgrid = NULL, resist = NULL,
                          resist.table = NULL, default.resist = NULL, landcover = '',
                          barrier = NULL, passage = NULL, resist.mult = 1, resist.table.mult = 1,
